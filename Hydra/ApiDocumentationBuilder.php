@@ -16,7 +16,7 @@ use Dunglas\ApiBundle\Api\ResourceCollectionInterface;
 use Dunglas\ApiBundle\Api\ResourceInterface;
 use Dunglas\ApiBundle\JsonLd\ContextBuilder;
 use Dunglas\ApiBundle\Mapping\AttributeMetadataInterface;
-use Dunglas\ApiBundle\Mapping\ClassMetadataFactoryInterface;
+use Dunglas\ApiBundle\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class ApiDocumentationBuilder implements ApiDocumentationBuilderInterface
@@ -122,8 +122,9 @@ class ApiDocumentationBuilder implements ApiDocumentationBuilderInterface
             }
 
             $properties = [];
-            foreach ($classMetadata->getAttributes() as $attributeName => $attributeMetadata) {
-                if ($attributeMetadata->isIdentifier() && !$attributeMetadata->isWritable()) {
+            $identifierName = $classMetadata->getIdentifierName();
+            foreach ($classMetadata->getAttributesMetadata() as $attributeName => $attributeMetadata) {
+                if ($identifierName === $attributeName && !$attributeMetadata->isWritable()) {
                     continue;
                 }
 
@@ -143,7 +144,7 @@ class ApiDocumentationBuilder implements ApiDocumentationBuilderInterface
                     ],
                     'hydra:title' => $attributeName,
                     'hydra:required' => $attributeMetadata->isRequired(),
-                    'hydra:readable' => $attributeMetadata->isIdentifier() ? false : $attributeMetadata->isReadable(),
+                    'hydra:readable' => $identifierName === $attributeName ? false : $attributeMetadata->isReadable(),
                     'hydra:writable' => $attributeMetadata->isWritable(),
                 ];
 

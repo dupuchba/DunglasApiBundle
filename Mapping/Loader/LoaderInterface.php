@@ -28,7 +28,7 @@ interface LoaderInterface
      * @param string[]|null          $denormalizationGroups
      * @param string[]|null          $validationGroups
      *
-     * @return bool
+     * @return ClassMetadataInterface
      */
     public function loadClassMetadata(
         ClassMetadataInterface $classMetadata,

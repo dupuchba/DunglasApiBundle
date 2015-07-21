@@ -9,9 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Dunglas\ApiBundle\Mapping;
+namespace Dunglas\ApiBundle\Mapping\Factory;
 
 use Dunglas\ApiBundle\Api\ResourceCollectionInterface;
+use Dunglas\ApiBundle\Mapping\AttributeMetadata;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 use Dunglas\ApiBundle\Util\ReflectionTrait;
 use PropertyInfo\PropertyInfoInterface;
 
@@ -45,12 +47,11 @@ class AttributeMetadataFactory implements AttributeMetadataFactoryInterface
         array $normalizationGroups = null,
         array $denormalizationGroups = null
     ) {
-        if ($classMetadata->hasAttribute($attributeName)) {
-            return clone $classMetadata->getAttribute($attributeName);
+        if ($classMetadata->hasAttributeMetadata($attributeName)) {
+            return $classMetadata->getAttributeMetadata($attributeName);
         }
 
-        $attributeMetadata = new AttributeMetadata($attributeName);
-
+        $attributeMetadata = new AttributeMetadata();
         $reflectionProperty = $this->getReflectionProperty($classMetadata->getReflectionClass(), $attributeName);
 
         if (!$reflectionProperty) {
@@ -84,11 +85,11 @@ class AttributeMetadataFactory implements AttributeMetadataFactoryInterface
         }
 
         if (null === $normalizationGroups) {
-            $attributeMetadata->setNormalizationLink(true);
+            $attributeMetadata = $attributeMetadata->withNormalizationLink(true);
         }
 
         if (null === $denormalizationGroups) {
-            $attributeMetadata->setDenormalizationLink(true);
+            $attributeMetadata = $attributeMetadata->withDenormalizationLink(true);
         }
 
         return $attributeMetadata;

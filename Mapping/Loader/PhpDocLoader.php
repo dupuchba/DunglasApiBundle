@@ -59,18 +59,19 @@ class PhpDocLoader implements LoaderInterface
             ($classReflector = $this->getClassReflector($classMetadata->getReflectionClass())) &&
             $docBlock = $classReflector->getDocBlock()
         ) {
-            $classMetadata->setDescription($docBlock->getShortDescription());
+            $classMetadata = $classMetadata->withDescription($docBlock->getShortDescription());
         }
 
-        foreach ($classMetadata->getAttributes() as $attributeMetadata) {
-            if ($reflectionProperty = $this->getReflectionProperty(
-                $classMetadata->getReflectionClass(), $attributeMetadata->getName())
-            ) {
-                $attributeMetadata->setDescription($this->propertyInfo->getShortDescription($reflectionProperty));
+        foreach ($classMetadata->getAttributesMetadata() as $attributeName => $attributeMetadata) {
+            if ($reflectionProperty = $this->getReflectionProperty($classMetadata->getReflectionClass(), $attributeName)) {
+                $attributeMetadata = $attributeMetadata->withDescription(
+                    $this->propertyInfo->getShortDescription($reflectionProperty)
+                );
+                $classMetadata = $classMetadata->withAttributeMetadata($attributeName, $attributeMetadata);
             }
         }
 
-        return true;
+        return $classMetadata;
     }
 
     /**

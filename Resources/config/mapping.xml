@@ -9,11 +9,13 @@
     </parameters>
 
     <services>
-        <service id="api.mapping.class_metadata_factory" class="Dunglas\ApiBundle\Mapping\ClassMetadataFactory">
+        <!-- Factories -->
+
+        <service id="api.mapping.class_metadata_factory" class="Dunglas\ApiBundle\Mapping\Factory\ClassMetadataFactory">
             <argument type="service" id="api.mapping.loaders.chain" />
         </service>
 
-        <service id="api.mapping.attribute_metadata_factory" class="Dunglas\ApiBundle\Mapping\AttributeMetadataFactory" public="false">
+        <service id="api.mapping.attribute_metadata_factory" class="Dunglas\ApiBundle\Mapping\Factory\AttributeMetadataFactory" public="false">
             <argument type="service" id="api.property_info" />
             <argument type="service" id="api.resource_collection" />
         </service>

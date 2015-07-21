@@ -52,19 +52,17 @@ class AnnotationLoader implements LoaderInterface
     ) {
         $reflectionClass = $classMetadata->getReflectionClass();
         if ($iri = $this->reader->getClassAnnotation($reflectionClass, self::IRI_ANNOTATION_NAME)) {
-            $classMetadata->setIri($iri->value);
+            $classMetadata = $classMetadata->withIri($iri->value);
         }
 
-        foreach ($classMetadata->getAttributes() as $attributeMetadata) {
-            $attributeName = $attributeMetadata->getName();
-
+        foreach ($classMetadata->getAttributesMetadata() as $attributeName => $attributeMetadata) {
             if ($reflectionProperty = $this->getReflectionProperty($reflectionClass, $attributeName)) {
                 if ($iri = $this->reader->getPropertyAnnotation($reflectionProperty, self::IRI_ANNOTATION_NAME)) {
-                    $attributeMetadata->setIri($iri->value);
+                    $classMetadata = $classMetadata->withAttributeMetadata($attributeName, $attributeMetadata->withIri($iri->value));
                 }
             }
         }
 
-        return true;
+        return $classMetadata;
     }
 }

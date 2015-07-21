@@ -11,7 +11,8 @@
 
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
-use Dunglas\ApiBundle\Mapping\AttributeMetadataFactoryInterface;
+use Dunglas\ApiBundle\Mapping\Factory\AttributeMetadataFactoryInterface;
+use Dunglas\ApiBundle\Mapping\AttributeMetadataInterface;
 use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
@@ -21,6 +22,8 @@ use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
  */
 class ReflectionLoader implements LoaderInterface
 {
+    const DEFAULT_IDENTIFIER = 'id';
+
     /**
      * @var AttributeMetadataFactoryInterface
      */
@@ -41,7 +44,7 @@ class ReflectionLoader implements LoaderInterface
         array $validationGroups = null
     ) {
         if (null !== $normalizationGroups && null !== $denormalizationGroups) {
-            return;
+            return $classMetadata;
         }
 
         $reflectionClass = $classMetadata->getReflectionClass();
@@ -51,9 +54,12 @@ class ReflectionLoader implements LoaderInterface
             $numberOfRequiredParameters = $reflectionMethod->getNumberOfRequiredParameters();
             $methodName = $reflectionMethod->name;
 
-            if ($this->populateFromSetter(
+            $newClassMetadata = $this->populateFromSetter(
                 $classMetadata, $methodName, $numberOfRequiredParameters, $normalizationGroups, $denormalizationGroups
-            )) {
+            );
+
+            if ($newClassMetadata) {
+                $classMetadata = $newClassMetadata;
                 continue;
             }
 
@@ -61,31 +67,40 @@ class ReflectionLoader implements LoaderInterface
                 continue;
             }
 
-            if ($this->populateFromGetterAndHasser($classMetadata, $methodName, $normalizationGroups, $denormalizationGroups)) {
+            $newClassMetadata = $this->populateFromGetterAndHasser(
+                $classMetadata, $methodName, $normalizationGroups, $denormalizationGroups
+            );
+
+            if ($newClassMetadata) {
+                $classMetadata = $newClassMetadata;
                 continue;
             }
 
-            $this->populateFromIsser($classMetadata, $methodName, $normalizationGroups, $denormalizationGroups);
+            $newClassMetadata = $this->populateFromIsser($classMetadata, $methodName, $normalizationGroups, $denormalizationGroups);
+            if ($newClassMetadata) {
+                $classMetadata = $newClassMetadata;
+            }
         }
 
         // Properties
         foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
-            $attribute = $this->attributeMetadataFactory->getAttributeMetadataFor(
-                $classMetadata, $reflectionProperty->name, $normalizationGroups, $denormalizationGroups
+            $attributeName = $reflectionProperty->name;
+            $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
+                $classMetadata, $attributeName, $normalizationGroups, $denormalizationGroups
             );
 
             if (null === $normalizationGroups) {
-                $attribute->setReadable(true);
-                $classMetadata->addAttribute($attribute);
+                $attributeMetadata = $attributeMetadata->withReadable(true);
+                $classMetadata = $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
             }
 
             if (null === $denormalizationGroups) {
-                $attribute->setWritable(true);
-                $classMetadata->addAttribute($attribute);
+                $attributeMetadata = $attributeMetadata->withWritable(true);
+                $classMetadata = $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
             }
         }
 
-        return true;
+        return $classMetadata;
     }
 
     /**
@@ -97,7 +112,7 @@ class ReflectionLoader implements LoaderInterface
      * @param array|null             $normalizationGroups
      * @param array|null             $denormalizationGroups
      *
-     * @return bool
+     * @return ClassMetadataInterface|null
      */
     private function populateFromSetter(
         ClassMetadataInterface $classMetadata,
@@ -111,16 +126,15 @@ class ReflectionLoader implements LoaderInterface
             1 !== $numberOfRequiredParameters ||
             !preg_match('/^(set|add|remove)(.+)$/i', $methodName, $matches)
         ) {
-            return false;
+            return;
         }
 
-        $attribute = $this->attributeMetadataFactory->getAttributeMetadataFor(
-            $classMetadata, lcfirst($matches[2]), $normalizationGroups, $denormalizationGroups
-        );
-        $attribute->setWritable(true);
-        $classMetadata->addAttribute($attribute);
+        $attributeName = lcfirst($matches[2]);
+        $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
+            $classMetadata, $attributeName, $normalizationGroups, $denormalizationGroups
+        )->withWritable(true);
 
-        return true;
+        return $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
     }
 
     /**
@@ -131,7 +145,7 @@ class ReflectionLoader implements LoaderInterface
      * @param array|null             $normalizationGroups
      * @param array|null             $denormalizationGroups
      *
-     * @return bool
+     * @return ClassMetadataInterface|null
      */
     private function populateFromGetterAndHasser(
         ClassMetadataInterface $classMetadata,
@@ -143,14 +157,15 @@ class ReflectionLoader implements LoaderInterface
             null !== $normalizationGroups ||
             (0 !== strpos($methodName, 'get') && 0 !== strpos($methodName, 'has'))
         ) {
-            return false;
+            return;
         }
 
-        $attribute = $this->attributeMetadataFactory->getAttributeMetadataFor($classMetadata, lcfirst(substr($methodName, 3)), $normalizationGroups, $denormalizationGroups);
-        $attribute->setReadable(true);
-        $classMetadata->addAttribute($attribute);
+        $attributeName = lcfirst(substr($methodName, 3));
+        $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
+            $classMetadata, $attributeName, $normalizationGroups, $denormalizationGroups
+        )->withReadable(true);
 
-        return true;
+        return $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
     }
 
     /**
@@ -160,6 +175,8 @@ class ReflectionLoader implements LoaderInterface
      * @param string                 $methodName
      * @param array|null             $normalizationGroups
      * @param array|null             $denormalizationGroups
+     *
+     * @return ClassMetadataInterface|null
      */
     private function populateFromIsser(
         ClassMetadataInterface $classMetadata,
@@ -171,8 +188,34 @@ class ReflectionLoader implements LoaderInterface
             return;
         }
 
-        $attribute = $this->attributeMetadataFactory->getAttributeMetadataFor($classMetadata, lcfirst(substr($methodName, 2)), $normalizationGroups, $denormalizationGroups);
-        $attribute->setReadable(true);
-        $classMetadata->addAttribute($attribute);
+        $attributeName = lcfirst(substr($methodName, 2));
+        $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
+            $classMetadata, $attributeName, $normalizationGroups, $denormalizationGroups
+        )->withReadable(true);
+
+        return $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
+    }
+
+    /**
+     * Adds an attribute metadata to the class metadata and set it as identifier if applicable.
+     *
+     * @param ClassMetadataInterface     $classMetadata
+     * @param AttributeMetadataInterface $attributeMetadata
+     * @param string                     $attributeName
+     *
+     * @return ClassMetadataInterface
+     */
+    private function addAttributeMetadata(
+        ClassMetadataInterface $classMetadata,
+        AttributeMetadataInterface $attributeMetadata,
+        $attributeName
+    ) {
+        $classMetadata = $classMetadata->withAttributeMetadata($attributeName, $attributeMetadata);
+
+        if (self::DEFAULT_IDENTIFIER === $attributeName) {
+            $classMetadata = $classMetadata->withIdentifierName(self::DEFAULT_IDENTIFIER);
+        }
+
+        return $classMetadata;
     }
 }

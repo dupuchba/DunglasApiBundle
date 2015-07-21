@@ -9,7 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Dunglas\ApiBundle\Mapping;
+namespace Dunglas\ApiBundle\Mapping\Factory;
+
+use Dunglas\ApiBundle\Mapping\AttributeMetadataInterface;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
  * Attribute metadata factory. Used by loaders to create new instances of attribute metadata.

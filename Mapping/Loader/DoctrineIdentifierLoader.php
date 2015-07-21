@@ -12,7 +12,7 @@
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Dunglas\ApiBundle\Mapping\AttributeMetadata;
+use Dunglas\ApiBundle\Mapping\Factory\AttributeMetadataFactoryInterface;
 use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
@@ -24,12 +24,17 @@ use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 class DoctrineIdentifierLoader implements LoaderInterface
 {
     /**
+     * @var AttributeMetadataFactoryInterface
+     */
+    private $attributeMetadataFactory;
+    /**
      * @var ManagerRegistry
      */
     private $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry)
+    public function __construct(AttributeMetadataFactoryInterface $attributeMetadataFactory, ManagerRegistry $managerRegistry)
     {
+        $this->attributeMetadataFactory = $attributeMetadataFactory;
         $this->managerRegistry = $managerRegistry;
     }
 
@@ -46,31 +51,29 @@ class DoctrineIdentifierLoader implements LoaderInterface
 
         $manager = $this->managerRegistry->getManagerForClass($className);
         if (!$manager) {
-            return true;
+            return $classMetadata;
         }
 
         $doctrineClassMetaData = $manager->getClassMetadata($className);
         if (!$doctrineClassMetaData) {
-            return true;
+            return $classMetadata;
         }
 
         $identifiers = $doctrineClassMetaData->getIdentifier();
         if (1 !== count($identifiers)) {
-            return true;
+            return $classMetadata;
         }
 
         $identifierName = $identifiers[0];
-        foreach ($classMetadata->getAttributes() as $attribute) {
-            if ($attribute->getName() === $identifierName) {
-                $attribute->setIdentifier(true);
-
-                return true;
-            }
+        if (!$classMetadata->hasAttributeMetadata($identifierName)) {
+            $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
+                $classMetadata, $identifierName, $normalizationGroups, $denormalizationGroups
+            );
+            $classMetadata = $classMetadata->withAttributeMetadata($identifierName, $attributeMetadata);
         }
 
-        $attributeMetadata = new AttributeMetadata($identifierName, true);
-        $classMetadata->addAttribute($attributeMetadata);
+        $classMetadata = $classMetadata->withIdentifierName($identifierName);
 
-        return true;
+        return $classMetadata;
     }
 }

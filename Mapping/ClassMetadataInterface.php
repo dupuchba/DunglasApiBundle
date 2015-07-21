@@ -11,8 +11,11 @@
 
 namespace Dunglas\ApiBundle\Mapping;
 
+use Dunglas\ApiBundle\Exception\InvalidArgumentException;
+use Dunglas\ApiBundle\Exception\RuntimeException;
+
 /**
- * Class metadata.
+ * Class metadata. Instances are immutable.
  *
  * @author Kévin Dunglas <dunglas@gmail.com>
  */
@@ -26,11 +29,13 @@ interface ClassMetadataInterface
     public function getName();
 
     /**
-     * Sets description.
+     * Returns an instance with the specified description.
      *
      * @param string $description
+     *
+     * @return self
      */
-    public function setDescription($description);
+    public function withDescription($description);
 
     /**
      * Gets the description.
@@ -40,25 +45,47 @@ interface ClassMetadataInterface
     public function getDescription();
 
     /**
-     * Sets IRI of this attribute.
+     * Returns an instance with the specified IRI.
      *
-     * @param string $iri
+     * @param string|null $iri
+     *
+     * @return self
      */
-    public function setIri($iri);
+    public function withIri($iri);
 
     /**
-     * Gets IRI of this attribute.
+     * Gets IRI of this class.
      *
      * @return string|null
      */
     public function getIri();
 
     /**
-     * Gets attributes metadata.
+     * Returns an instance with the specified identifier name.
+     *
+     * @param string $identifierName
+     *
+     * @return self
+     *
+     * @throws InvalidArgumentException
+     */
+    public function withIdentifierName($identifierName);
+
+    /**
+     * Gets the name of the identifier attribute.
+     *
+     * @return string
+     *
+     * @throws RuntimeException
+     */
+    public function getIdentifierName();
+
+    /**
+     * Gets attributes metadata. The key is the attribute name.
      *
      * @return AttributeMetadataInterface[]
      */
-    public function getAttributes();
+    public function getAttributesMetadata();
 
     /**
      * Has the class metadata the given attribute metadata?
@@ -67,7 +94,7 @@ interface ClassMetadataInterface
      *
      * @return bool
      */
-    public function hasAttribute($name);
+    public function hasAttributeMetadata($name);
 
     /**
      * Gets the given attribute metadata.
@@ -76,14 +103,18 @@ interface ClassMetadataInterface
      *
      * @return AttributeMetadataInterface
      */
-    public function getAttribute($name);
+    public function getAttributeMetadata($name);
 
     /**
-     * Adds an {@link AttributeMetadataInterface}.
+     * Returns an instance with the specified attribute metadata added.
+     * If an attribute with the same name exists it is replaced.
      *
+     * @param string                     $attributeName
      * @param AttributeMetadataInterface $attributeMetadata
+     *
+     * @return self
      */
-    public function addAttribute(AttributeMetadataInterface $attributeMetadata);
+    public function withAttributeMetadata($attributeName, AttributeMetadataInterface $attributeMetadata);
 
     /**
      * Returns a {@see \ReflectionClass} instance for this class.
@@ -91,11 +122,4 @@ interface ClassMetadataInterface
      * @return \ReflectionClass
      */
     public function getReflectionClass();
-
-    /**
-     * Gets the attribute identifier of the class.
-     *
-     * @return AttributeMetadataInterface|null
-     */
-    public function getIdentifier();
 }

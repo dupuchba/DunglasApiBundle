@@ -11,6 +11,9 @@
 
 namespace Dunglas\ApiBundle\Mapping;
 
+use Dunglas\ApiBundle\Exception\InvalidArgumentException;
+use Dunglas\ApiBundle\Exception\RuntimeException;
+
 /**
  * {@inheritdoc}
  *
@@ -43,13 +46,21 @@ class ClassMetadata implements ClassMetadataInterface
      */
     public $iri;
     /**
-     * @var AttributeMetadata[]
+     * @var AttributeMetadataInterface[]
      *
      * @internal This property is public in order to reduce the size of the
      *           class' serialized representation. Do not access it. Use
-     *           {@link getAttributes()} instead.
+     *           {@link getAttributesMetadata()} instead.
      */
-    public $attributes = [];
+    public $attributesMetadata = [];
+    /**
+     * @var string
+     *
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
+     *           {@link getIdentifierName()} instead.
+     */
+    public $identifierName;
     /**
      * @var \ReflectionClass
      */
@@ -76,9 +87,12 @@ class ClassMetadata implements ClassMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setDescription($description)
+    public function withDescription($description)
     {
-        $this->description = $description;
+        $classMetadata = clone $this;
+        $classMetadata->description = $description;
+
+        return $classMetadata;
     }
 
     /**
@@ -92,9 +106,12 @@ class ClassMetadata implements ClassMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setIri($iri)
+    public function withIri($iri)
     {
-        $this->iri = $iri;
+        $classMetadata = clone $this;
+        $classMetadata->iri = $iri;
+
+        return $classMetadata;
     }
 
     /**
@@ -108,45 +125,65 @@ class ClassMetadata implements ClassMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function getIdentifier()
+    public function withIdentifierName($identifierName)
     {
-        foreach ($this->attributes as $attribute) {
-            if ($attribute->isIdentifier()) {
-                return $attribute;
-            }
+        if (!isset($this->attributesMetadata[$identifierName])) {
+            throw new InvalidArgumentException(
+                sprintf('The attribute "%s" cannot be the identifier: this attribute does not exist.', $identifierName)
+            );
         }
+
+        $classMetadata = clone $this;
+        $classMetadata->identifierName = $identifierName;
+
+        return $classMetadata;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getAttributes()
+    public function getIdentifierName()
     {
-        return $this->attributes;
+        if (!$this->identifierName) {
+            throw new RuntimeException(sprintf('The class "%s" has no identifier.', $this->name));
+        }
+
+        return $this->identifierName;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function hasAttribute($name)
+    public function withAttributeMetadata($name, AttributeMetadataInterface $attributeMetadata)
     {
-        return isset($this->attributes[$name]);
+        $classMetadata = clone $this;
+        $classMetadata->attributesMetadata[$name] = $attributeMetadata;
+
+        return $classMetadata;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getAttribute($name)
+    public function getAttributesMetadata()
     {
-        return $this->attributes[$name];
+        return $this->attributesMetadata;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function addAttribute(AttributeMetadataInterface $attributeMetadata)
+    public function hasAttributeMetadata($name)
     {
-        $this->attributes[$attributeMetadata->getName()] = $attributeMetadata;
+        return isset($this->attributesMetadata[$name]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttributeMetadata($name)
+    {
+        return $this->attributesMetadata[$name];
     }
 
     /**
@@ -172,7 +209,8 @@ class ClassMetadata implements ClassMetadataInterface
             'name',
             'description',
             'iri',
-            'attributes',
+            'identifierName',
+            'attributesMetadata',
         ];
     }
 }

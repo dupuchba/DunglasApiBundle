@@ -20,24 +20,6 @@ use PropertyInfo\Type;
  */
 class AttributeMetadata implements AttributeMetadataInterface
 {
-    const DEFAULT_IDENTIFIER_NAME = 'id';
-
-    /**
-     * @var bool
-     *
-     * @internal This property is public in order to reduce the size of the
-     *           class' serialized representation. Do not access it. Use
-     *           {@link isIdentifier()} instead.
-     */
-    public $identifier;
-    /**
-     * @var string
-     *
-     * @internal This property is public in order to reduce the size of the
-     *           class' serialized representation. Do not access it. Use
-     *           {@link getName()} instead.
-     */
-    public $name;
     /**
      * @var Type
      *
@@ -120,24 +102,6 @@ class AttributeMetadata implements AttributeMetadataInterface
     public $iri;
 
     /**
-     * @param string    $name
-     * @param bool|null $identifier
-     */
-    public function __construct($name, $identifier = null)
-    {
-        $this->name = $name;
-        $this->identifier = null === $identifier ? $name === self::DEFAULT_IDENTIFIER_NAME : $identifier;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function withType(Type $type)
@@ -167,9 +131,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setDescription($description)
+    public function withDescription($description)
     {
-        $this->description = $description;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->description = $description;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -183,9 +150,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setReadable($readable)
+    public function withReadable($readable)
     {
-        $this->readable = $readable;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->readable = $readable;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -199,9 +169,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setWritable($writable)
+    public function withWritable($writable)
     {
-        $this->writable = $writable;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->writable = $writable;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -215,9 +188,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setRequired($required)
+    public function withRequired($required)
     {
-        $this->required = $required;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->required = $required;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -261,9 +237,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setNormalizationLink($normalizationLink)
+    public function withNormalizationLink($normalizationLink)
     {
-        $this->normalizationLink = $normalizationLink;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->normalizationLink = $normalizationLink;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -277,9 +256,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setDenormalizationLink($denormalizationLink)
+    public function withDenormalizationLink($denormalizationLink)
     {
-        $this->denormalizationLink = $denormalizationLink;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->denormalizationLink = $denormalizationLink;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -293,9 +275,12 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setIri($iri)
+    public function withIri($iri)
     {
-        $this->iri = $iri;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->iri = $iri;
+
+        return $attributeMetadata;
     }
 
     /**
@@ -307,22 +292,6 @@ class AttributeMetadata implements AttributeMetadataInterface
     }
 
     /**
-     * @return bool
-     */
-    public function isIdentifier()
-    {
-        return $this->identifier;
-    }
-
-    /**
-     * @param bool $identifier
-     */
-    public function setIdentifier($identifier)
-    {
-        $this->identifier = $identifier;
-    }
-
-    /**
      * Returns the names of the properties that should be serialized.
      *
      * @return string[]
@@ -330,8 +299,6 @@ class AttributeMetadata implements AttributeMetadataInterface
     public function __sleep()
     {
         return [
-            'name',
-            'identifier',
             'type',
             'description',
             'readable',

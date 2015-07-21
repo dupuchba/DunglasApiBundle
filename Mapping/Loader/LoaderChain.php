@@ -12,7 +12,6 @@
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
 use Dunglas\ApiBundle\Exception\InvalidArgumentException;
-use Dunglas\ApiBundle\Exception\RuntimeException;
 use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
@@ -55,36 +54,20 @@ class LoaderChain implements LoaderInterface
      * {@inheritdoc}
      */
     public function loadClassMetadata(
-        ClassMetadataInterface $metadata,
+        ClassMetadataInterface $classMetadata,
         array $normalizationGroups = null,
         array $denormalizationGroups = null,
         array $validationGroups = null
     ) {
-        $success = false;
-
         foreach ($this->loaders as $loader) {
-            $success = $loader->loadClassMetadata(
-                $metadata,
+            $classMetadata = $loader->loadClassMetadata(
+                $classMetadata,
                 $normalizationGroups,
                 $denormalizationGroups,
                 $validationGroups
-            ) || $success;
+            );
         }
 
-        $this->checkClassMetaData($metadata);
-
-        return $success;
-    }
-
-    /**
-     * @param ClassMetadataInterface $classMetaData
-     *
-     * @throws RunTimeException
-     */
-    private function checkClassMetaData(ClassMetadataInterface $classMetaData)
-    {
-        if (!$classMetaData->getIdentifier()) {
-            throw new RuntimeException(sprintf('Class "%s" has no identifier.', $classMetaData->getName()));
-        }
+        return $classMetadata;
     }
 }
