@@ -48,7 +48,7 @@ class SerializerMetadataLoader implements LoaderInterface
         array $denormalizationGroups = null,
         array $validationGroups = null
     ) {
-        if (!null === $normalizationGroups && null === $denormalizationGroups) {
+        if (null === $normalizationGroups && null === $denormalizationGroups) {
             return $classMetadata;
         }
 
@@ -166,8 +166,6 @@ class SerializerMetadataLoader implements LoaderInterface
 
             if (isset($normalizationLink) && isset($denormalizationLink)) {
                 $classMetadata = $classMetadata->withAttributeMetadata($attributeName, $attributeMetadata);
-
-                continue;
             }
         }
 

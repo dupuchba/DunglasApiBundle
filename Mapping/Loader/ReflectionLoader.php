@@ -22,16 +22,24 @@ use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
  */
 class ReflectionLoader implements LoaderInterface
 {
-    const DEFAULT_IDENTIFIER = 'id';
+    /**
+     * @var string
+     */
+    private $defaultIdentifierName;
 
     /**
      * @var AttributeMetadataFactoryInterface
      */
     private $attributeMetadataFactory;
 
-    public function __construct(AttributeMetadataFactoryInterface $attributeMetadataFactory)
+    /**
+     * @param AttributeMetadataFactoryInterface $attributeMetadataFactory
+     * @param string                            $defaultIdentifierName
+     */
+    public function __construct(AttributeMetadataFactoryInterface $attributeMetadataFactory, $defaultIdentifierName = 'id')
     {
         $this->attributeMetadataFactory = $attributeMetadataFactory;
+        $this->defaultIdentifierName = $defaultIdentifierName;
     }
 
     /**
@@ -48,7 +56,32 @@ class ReflectionLoader implements LoaderInterface
         }
 
         $reflectionClass = $classMetadata->getReflectionClass();
+        $classMetadata = $this->populateFromPublicMethods(
+            $reflectionClass, $classMetadata, $normalizationGroups, $denormalizationGroups
+        );
+        $classMetadata = $this->populateFromPublicProperties(
+            $reflectionClass, $classMetadata, $normalizationGroups, $denormalizationGroups
+        );
 
+        return $classMetadata;
+    }
+
+    /**
+     * Pouplates class metadata using public methods.
+     *
+     * @param \ReflectionClass       $reflectionClass
+     * @param ClassMetadataInterface $classMetadata
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     *
+     * @return ClassMetadataInterface|null
+     */
+    private function populateFromPublicMethods(
+        \ReflectionClass $reflectionClass,
+        ClassMetadataInterface $classMetadata,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
         // Methods
         foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
             $numberOfRequiredParameters = $reflectionMethod->getNumberOfRequiredParameters();
@@ -79,24 +112,6 @@ class ReflectionLoader implements LoaderInterface
             $newClassMetadata = $this->populateFromIsser($classMetadata, $methodName, $normalizationGroups, $denormalizationGroups);
             if ($newClassMetadata) {
                 $classMetadata = $newClassMetadata;
-            }
-        }
-
-        // Properties
-        foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
-            $attributeName = $reflectionProperty->name;
-            $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
-                $classMetadata, $attributeName, $normalizationGroups, $denormalizationGroups
-            );
-
-            if (null === $normalizationGroups) {
-                $attributeMetadata = $attributeMetadata->withReadable(true);
-                $classMetadata = $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
-            }
-
-            if (null === $denormalizationGroups) {
-                $attributeMetadata = $attributeMetadata->withWritable(true);
-                $classMetadata = $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
             }
         }
 
@@ -197,6 +212,42 @@ class ReflectionLoader implements LoaderInterface
     }
 
     /**
+     * Populates class metadata from public properties.
+     *
+     * @param \ReflectionClass       $reflectionClass
+     * @param ClassMetadataInterface $classMetadata
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     *
+     * @return ClassMetadataInterface
+     */
+    private function populateFromPublicProperties(
+        \ReflectionClass $reflectionClass,
+        ClassMetadataInterface $classMetadata,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
+        foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
+            $attributeName = $reflectionProperty->name;
+            $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
+                $classMetadata, $attributeName, $normalizationGroups, $denormalizationGroups
+            );
+
+            if (null === $normalizationGroups) {
+                $attributeMetadata = $attributeMetadata->withReadable(true);
+                $classMetadata = $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
+            }
+
+            if (null === $denormalizationGroups) {
+                $attributeMetadata = $attributeMetadata->withWritable(true);
+                $classMetadata = $this->addAttributeMetadata($classMetadata, $attributeMetadata, $attributeName);
+            }
+        }
+
+        return $classMetadata;
+    }
+
+    /**
      * Adds an attribute metadata to the class metadata and set it as identifier if applicable.
      *
      * @param ClassMetadataInterface     $classMetadata
@@ -212,8 +263,8 @@ class ReflectionLoader implements LoaderInterface
     ) {
         $classMetadata = $classMetadata->withAttributeMetadata($attributeName, $attributeMetadata);
 
-        if (self::DEFAULT_IDENTIFIER === $attributeName) {
-            $classMetadata = $classMetadata->withIdentifierName(self::DEFAULT_IDENTIFIER);
+        if ($this->defaultIdentifierName === $attributeName) {
+            $classMetadata = $classMetadata->withIdentifierName($this->defaultIdentifierName);
         }
 
         return $classMetadata;
