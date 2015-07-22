@@ -74,7 +74,7 @@ class ReflectionLoader implements LoaderInterface
      * @param array|null             $normalizationGroups
      * @param array|null             $denormalizationGroups
      *
-     * @return ClassMetadataInterface|null
+     * @return ClassMetadataInterface
      */
     private function populateFromPublicMethods(
         \ReflectionClass $reflectionClass,

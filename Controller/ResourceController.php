@@ -189,7 +189,7 @@ class ResourceController extends Controller
         $this->get('event_dispatcher')->dispatch(Events::PRE_CREATE_VALIDATION, new DataEvent($resource, $object));
 
         $violations = $this->get('validator')->validate($object, null, $resource->getValidationGroups());
-        if (0 === count($violations)) {
+        if (!$this->hasViolations($violations)) {
             // Validation succeed
             $this->get('event_dispatcher')->dispatch(Events::PRE_CREATE, new DataEvent($resource, $object));
 
@@ -254,7 +254,7 @@ class ResourceController extends Controller
         $this->get('event_dispatcher')->dispatch(Events::PRE_UPDATE_VALIDATION, new DataEvent($resource, $object));
 
         $violations = $this->get('validator')->validate($object, null, $resource->getValidationGroups());
-        if (0 === count($violations)) {
+        if (!$this->hasViolations($violations)) {
             // Validation succeed
             $this->get('event_dispatcher')->dispatch(Events::PRE_UPDATE, new DataEvent($resource, $object));
 
@@ -283,5 +283,16 @@ class ResourceController extends Controller
         $this->get('event_dispatcher')->dispatch(Events::PRE_DELETE, new DataEvent($resource, $object));
 
         return new Response(null, 204);
+    }
+
+    /**
+     * Checls if the violation list contains violations.
+     *
+     * @param ConstraintViolationListInterface $violations
+     *
+     * @return bool
+     */
+    private function hasViolations(ConstraintViolationListInterface $violations) {
+        return 0 !== count($violations);
     }
 }
