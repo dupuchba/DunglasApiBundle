@@ -193,7 +193,8 @@ class ReflectionLoader implements LoaderInterface
      *
      * @return ClassMetadataInterface|null
      */
-    private function populateFromIsser(ClassMetadataInterface $classMetadata, $methodName, array $normalizationGroups = null, array $denormalizationGroups = null) {
+    private function populateFromIsser(ClassMetadataInterface $classMetadata, $methodName, array $normalizationGroups = null, array $denormalizationGroups = null)
+    {
         if (null !== $normalizationGroups || 0 !== strpos($methodName, 'is')) {
             return;
         }
@@ -216,7 +217,8 @@ class ReflectionLoader implements LoaderInterface
      *
      * @return ClassMetadataInterface
      */
-    private function populateFromPublicProperties(\ReflectionClass $reflectionClass, ClassMetadataInterface $classMetadata, array $normalizationGroups = null, array $denormalizationGroups = null) {
+    private function populateFromPublicProperties(\ReflectionClass $reflectionClass, ClassMetadataInterface $classMetadata, array $normalizationGroups = null, array $denormalizationGroups = null)
+    {
         foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
             $attributeName = $reflectionProperty->name;
             $attributeMetadata = $this->attributeMetadataFactory->getAttributeMetadataFor(
@@ -246,7 +248,8 @@ class ReflectionLoader implements LoaderInterface
      *
      * @return ClassMetadataInterface
      */
-    private function addAttributeMetadata(ClassMetadataInterface $classMetadata, AttributeMetadataInterface $attributeMetadata, $attributeName) {
+    private function addAttributeMetadata(ClassMetadataInterface $classMetadata, AttributeMetadataInterface $attributeMetadata, $attributeName)
+    {
         $classMetadata = $classMetadata->withAttributeMetadata($attributeName, $attributeMetadata);
 
         if ($this->defaultIdentifierName === $attributeName) {

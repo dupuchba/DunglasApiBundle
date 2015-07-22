@@ -292,7 +292,8 @@ class ResourceController extends Controller
      *
      * @return bool
      */
-    private function hasViolations(ConstraintViolationListInterface $violations) {
+    private function hasViolations(ConstraintViolationListInterface $violations)
+    {
         return 0 !== count($violations);
     }
 }
