@@ -83,7 +83,7 @@ interface ClassMetadataInterface
     /**
      * Gets attributes metadata. The key is the attribute name.
      *
-     * @return AttributeMetadataInterface[]
+     * @return array The attribute name as key, an instance of AttributeMetadataInterface as value.
      */
     public function getAttributesMetadata();
 
