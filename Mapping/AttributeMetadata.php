@@ -21,7 +21,7 @@ use PropertyInfo\Type;
 class AttributeMetadata implements AttributeMetadataInterface
 {
     /**
-     * @var Type
+     * @var Type|null
      *
      * @internal This property is public in order to reduce the size of the
      *           class' serialized representation. Do not access it. Use
@@ -35,7 +35,7 @@ class AttributeMetadata implements AttributeMetadataInterface
      *           class' serialized representation. Do not access it. Use
      *           {@link getDescription()} instead.
      */
-    public $description;
+    public $description = '';
     /**
      * @var bool
      *
@@ -75,7 +75,7 @@ class AttributeMetadata implements AttributeMetadataInterface
      *           class' serialized representation. Do not access it. Use
      *           {@link getLinkClass()} instead.
      */
-    public $linkClass;
+    public $linkClass = '';
     /**
      * @var bool
      *
