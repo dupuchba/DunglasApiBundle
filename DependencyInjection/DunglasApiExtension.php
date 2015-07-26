@@ -95,11 +95,11 @@ class DunglasApiExtension extends Extension implements PrependExtensionInterface
      */
     private function enableJsonLd(ContainerBuilder $container, Loader\XmlFileLoader $loader)
     {
-        $loader->load('json_ld.xml');
+        $loader->load('jsonld.xml');
         $loader->load('hydra.xml');
 
         $container->getDefinition('api.format_negotiator')->addMethodCall('registerFormat', [
-            'jsonld', ['application/ld+json'], true
+            'jsonld', ['application/ld+json'], true,
         ]);
     }
 }

@@ -26,7 +26,7 @@ trait ActionUtilTrait
     /**
      * Gets an item using the data provider. Throws a 404 error if not found.
      *
-     * @param DataProvider $dataProvider
+     * @param DataProvider      $dataProvider
      * @param ResourceInterface $resourceType
      * @param $id
      *

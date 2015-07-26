@@ -62,8 +62,7 @@ class ResponderViewListener
             return $controllerResult;
         }
 
-        switch ($request->getMethod())
-        {
+        switch ($request->getMethod()) {
             case 'POST':
                 $status = 201;
                 break;

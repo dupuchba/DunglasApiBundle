@@ -53,7 +53,7 @@ class ConstraintViolationListNormalizer implements NormalizerInterface
         }
 
         return [
-            '@context' => $this->router->generate('api_json_ld_context', ['shortName' => 'ConstraintViolationList']),
+            '@context' => $this->router->generate('api_jsonld_context', ['shortName' => 'ConstraintViolationList']),
             '@type' => 'ConstraintViolationList',
             'hydra:title' => isset($context['title']) ? $context['title'] : 'An error occurred',
             'hydra:description' => isset($message) ? $message : (string) $object,
@@ -66,7 +66,6 @@ class ConstraintViolationListNormalizer implements NormalizerInterface
      */
     public function supportsNormalization($data, $format = null)
     {
-        var_dump($data);
         return self::FORMAT === $format && $data instanceof ConstraintViolationListInterface;
     }
 }

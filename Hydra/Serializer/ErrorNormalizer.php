@@ -57,7 +57,7 @@ class ErrorNormalizer implements NormalizerInterface
         }
 
         $data = [
-            '@context' => $this->router->generate('api_json_ld_context', ['shortName' => 'Error']),
+            '@context' => $this->router->generate('api_jsonld_context', ['shortName' => 'Error']),
             '@type' => 'Error',
             'hydra:title' => isset($context['title']) ? $context['title'] : 'An error occurred',
             'hydra:description' => isset($message) ? $message : (string) $object,

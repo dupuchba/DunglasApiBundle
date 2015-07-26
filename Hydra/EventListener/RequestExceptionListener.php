@@ -11,7 +11,6 @@
 
 namespace Dunglas\ApiBundle\Hydra\EventListener;
 
-use Dunglas\ApiBundle\Exception\DeserializationException;
 use Dunglas\ApiBundle\Exception\InvalidArgumentException;
 use Dunglas\ApiBundle\Exception\ValidationException;
 use Dunglas\ApiBundle\JsonLd\Response;

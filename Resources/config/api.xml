@@ -36,13 +36,13 @@
 
         <!-- Event listeners -->
 
-        <service id="api.listener.resource_type_request" class="Dunglas\ApiBundle\EventListener\ResourceTypeRequestListener">
+        <service id="api.listener.request.resource_type" class="Dunglas\ApiBundle\EventListener\ResourceTypeRequestListener">
             <argument type="service" id="api.resource_collection" />
 
             <tag name="kernel.event_listener" event="kernel.request" method="onKernelRequest" />
         </service>
 
-        <service id="api.json_ld.listener.request.format" class="Dunglas\ApiBundle\EventListener\FormatRequestListener">
+        <service id="api.listener.request.format" class="Dunglas\ApiBundle\EventListener\FormatRequestListener">
             <argument type="service" id="api.format_negotiator" />
             <argument>%api.supported_formats%</argument>
 

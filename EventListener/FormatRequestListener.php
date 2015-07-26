@@ -13,7 +13,6 @@ namespace Dunglas\ApiBundle\EventListener;
 
 use Negotiation\FormatNegotiatorInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * Chooses the format to user according to the Accept header and supported formats.
