@@ -22,6 +22,8 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
  */
 class ConstraintViolationListNormalizer implements NormalizerInterface
 {
+    const FORMAT = 'hydra-error';
+
     /**
      * @var RouterInterface
      */
@@ -64,6 +66,7 @@ class ConstraintViolationListNormalizer implements NormalizerInterface
      */
     public function supportsNormalization($data, $format = null)
     {
-        return 'hydra-error' === $format && $data instanceof ConstraintViolationListInterface;
+        var_dump($data);
+        return self::FORMAT === $format && $data instanceof ConstraintViolationListInterface;
     }
 }

@@ -43,7 +43,7 @@ class ItemNormalizer extends AbstractNormalizer
     /**
      * @var string
      */
-    const FORMAT = 'json-ld';
+    const FORMAT = 'jsonld';
 
     /**
      * @var IriConverterInterface
