@@ -56,9 +56,8 @@ class ResponderViewListener
 
         $request = $event->getRequest();
 
-        $resourceType = $request->attributes->get('_resource_type');
         $format = $request->attributes->get('_api_format');
-        if (!$resourceType || self::FORMAT !== $format) {
+        if (self::FORMAT !== $format) {
             return $controllerResult;
         }
 
@@ -76,10 +75,11 @@ class ResponderViewListener
                 break;
         }
 
+        $resourceType = $request->attributes->get('_resource_type');
         $response = new JsonLdResponse(
-            $this->normalizer->normalize(
+            $resourceType ? $this->normalizer->normalize(
                 $controllerResult, self::FORMAT, $resourceType->getNormalizationContext() + ['request_uri' => $request->getRequestUri()]
-            ),
+            ) : $controllerResult,
             $status
         );
 
