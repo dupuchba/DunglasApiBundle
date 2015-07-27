@@ -40,7 +40,7 @@ class DocumentationAction
      */
     public function __invoke(Request $request)
     {
-        $request->attributes->set('api_format', 'jsonld');
+        $request->attributes->set('_api_format', 'jsonld');
 
         return $this->apiDocumentationBuilder->getApiDocumentation();
     }
