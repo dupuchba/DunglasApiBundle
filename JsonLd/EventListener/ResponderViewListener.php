@@ -12,6 +12,7 @@
 namespace Dunglas\ApiBundle\JsonLd\EventListener;
 
 use Dunglas\ApiBundle\JsonLd\Response as JsonLdResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -62,11 +63,11 @@ class ResponderViewListener
         }
 
         switch ($request->getMethod()) {
-            case 'POST':
+            case Request::METHOD_POST:
                 $status = 201;
                 break;
 
-            case 'DELETE':
+            case Request::METHOD_DELETE:
                 $status = 204;
                 break;
 
